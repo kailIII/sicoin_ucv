@@ -17,6 +17,12 @@ su ejecución (http://www.web2py.com/init/default/download).
 
 Luego solo copia y pega el contenido de sicoin en el directorio applications de Web2py.
 
+## ¿Que hace falta aún en Sicoin?
+
+  * Reportes de Correspondencias.
+  * Estadisticas.
+  * Manual de Usuario.
+
 ## ¿Problemas?
 
 Reporta problemas en http://code.google.com/p/sicoin-ucv/issues/list
