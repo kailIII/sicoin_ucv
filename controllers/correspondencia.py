@@ -723,7 +723,8 @@ def agregarCorrespondenciaMultiple2():
         for usuario in usuarios:
             usuario = int(usuario)
             registro_usuario = db(db.auth_user.id==usuario).select(db.auth_user.departamento).first()
-            correspondencia_nueva = db.correspondencia.insert(**db.correspondencia._filter_fields(correspondencia))
+            id_correspondencia_nueva = db.correspondencia.insert(**db.correspondencia._filter_fields(correspondencia))
+            correspondencia_nueva = db.correspondencia(id_correspondencia)
             correspondencia_nueva.update_record(fecha_registro = request.now, asignado_a = usuario,
                                                 registrado_por = auth.user.id, modificado_por = auth.user.id,
                                                 departamento_destino = registro_usuario['departamento'],
