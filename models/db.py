@@ -11,7 +11,7 @@
 
 if not request.env.web2py_runtime_gae:
     ## if NOT running on Google App Engine use SQLite or other DB
-    db = DAL('mysql://root:*forint49*@127.0.0.1/db_sicoin', migrate_enabled=False)
+    db = DAL('mysql://usuario_bd:clave_bd@127.0.0.1/nombre_bd', migrate_enabled=False)
 else:
     ## connect to Google BigTable (optional 'google:datastore://namespace')
     db = DAL('google:datastore')
