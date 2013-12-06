@@ -1,0 +1,76 @@
+{{registro= db(db.auth_user.departamento==auth.user.departamento).select(db.auth_user.departamento).first()}}
+{{departamento= db(db.departamento.id==registro['departamento']).select(db.departamento.departamento).first()}}
+{{extend 'layout.html'}}
+<script src="{{=URL('static','js/jqprint.js')}}"></script>
+{{=grid}}
+<script>
+    $(document).ready(function() {
+       $('input:submit[value=""]').attr('value','Generar Reporte');     
+     });
+</script>
+{{if session.reporte!="":}}
+<br />
+<br />
+<a class="btn_imprimir w2p_trap button btn" onclick="javascript:$('#nota_entrega').jqprint();$('.btn_imprimir').hide();$('#nota_entrega').hide();"><span class="icon print icon-print"></span><span class="buttontext button" title="Imprimir">Imprimir Reporte</span></a>
+<div id=nota_entrega>
+<center>
+    <table>
+		<tr>
+        	<td style="text-align:right;">
+            	<img src="/sicoin/static/images/ucv.png" width="80" height="80"  />
+            </td>
+            <td style="vertical-align:bottom; text-align:center; width:400px;">
+            	<small>
+                            	
+                            		Universidad Central de Venezuela <br />
+                                    Direcci&oacute;n de Formaci&oacute;n Integral y Proyecci&oacute;n Universitaria<br />
+                    Departamento de {{=departamento['departamento']}}
+                                
+                </small>
+            </td>
+            <td style="text-align:left;">
+            	<img src="/sicoin/static/images/dfipu.png" width="80"  height="80" />
+            </td>
+        </tr>
+        <table style="width:100%">
+        <tr>
+        	<td colspan="5">
+                <p style="text-align:right;">Fecha: {{=request.now.day}}-{{=request.now.month}}-{{=request.now.year}}</p>  
+            </td>
+        </tr>
+        <tr>
+        	<td colspan="5">
+                <div id="tabla_reporte">
+					{{=session.reporte}}
+					<script>
+    					$("#tabla_reporte tr:first").append("<th width='150'>Firma</th><th width='150'>Fecha</th>");
+    					$("#tabla_reporte tr:gt(0)").append("<td>&nbsp</td><td>&nbsp</td>");
+                        $('#tabla_reporte table').addClass("table table-striped table-bordered table-condensed");
+    				</script>
+				</div>
+            </td>
+        </tr>
+        <tr>
+        	<td>
+                <br /><br />
+            </td>
+        </tr>
+        <tr>
+        <td>
+        </td>
+        <td>
+ 			<p style="text-align:center;">________________________<br />Despachado por</p>
+        </td>
+        <td>
+        </td>
+        <td>
+          	<p style="text-align:center;">________________________<br />Recibido por</p>
+        </td>	
+            <td>
+            </td>
+        </tr>
+	</table>
+</center>
+</div>
+{{pass}}		
+{{session.reporte = ""}}

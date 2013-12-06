@@ -1,0 +1,34 @@
+{{extend 'layout.html'}}
+<div class="form_header row_buttons  "><a class="w2p_trap button btn" href="/sicoin/correspondencia/listar_correspondencias_departamento"><span class="icon leftarrow icon-arrow-left"></span><span class="buttontext button" title="Back">Regresar</span></a></div>
+{{=form}}
+{{=asignados}}
+<script>
+$('#correspondencia_asignados').hide();
+seleccionado = $("#correspondencia_asignado_a option:selected").val();
+$('#correspondencia_asignado_a').empty();
+contenido = $('#correspondencia_asignados').html();
+$('#correspondencia_asignado_a').append(contenido);
+$("#correspondencia_asignado_a").val(seleccionado).attr('selected',true);
+strfecha = $("#correspondencia_fecha_correspondencia__label").parent().next().html();
+dateParts = strfecha.split("-");
+fecha = new Date(dateParts[2], (dateParts[1] - 1), dateParts[0]);
+var diasemana = "";
+dia = fecha.getDay();
+switch(fecha.getDay()){
+    case 0: diasemana = "Domingo";
+            break
+    case 1: diasemana = "Lunes";
+            break
+    case 2: diasemana = "Martes";
+            break
+    case 3: diasemana = "Miercoles";
+            break
+    case 4: diasemana = "Jueves";
+            break
+    case 5: diasemana = "Viernes";
+            break
+    default: diasemana = "Sabado";
+            break
+}
+$("#correspondencia_fecha_correspondencia__label").parent().next().html(diasemana + ", " + strfecha);
+</script>

@@ -1,0 +1,12 @@
+{{extend 'layout.html'}}
+<div class="form_header row_buttons  "><a class="w2p_trap button btn" href="/sicoin/correspondencia/listar_correspondencias"><span class="icon leftarrow icon-arrow-left"></span><span class="buttontext button" title="Back">Regresar</span></a></div>
+{{=form}}
+{{=asignados}}
+<script>
+$('#correspondencia_asignados').hide();
+seleccionado = $("#correspondencia_asignado_a option:selected").val();
+$('#correspondencia_asignado_a').empty();
+contenido = $('#correspondencia_asignados').html();
+$('#correspondencia_asignado_a').append(contenido);
+$("#correspondencia_asignados_a").val(seleccionado).attr('selected',true);
+</script>

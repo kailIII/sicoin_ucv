@@ -1,0 +1,37 @@
+(dp1
+S'dependencia'
+p2
+(dp3
+S'type'
+p4
+S'reference dependencia'
+p5
+sS'sortable'
+p6
+I3
+sS'sql'
+p7
+S'INT, INDEX dependencia__idx (dependencia), FOREIGN KEY (dependencia) REFERENCES dependencia (id) ON DELETE CASCADE'
+p8
+ssS'id'
+p9
+(dp10
+g4
+g9
+sg6
+I1
+sg7
+S'INT AUTO_INCREMENT NOT NULL'
+p11
+ssS'departamento'
+p12
+(dp13
+g4
+S'string'
+p14
+sg6
+I2
+sg7
+S'VARCHAR(100) NOT NULL'
+p15
+ss.

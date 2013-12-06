@@ -1,0 +1,30 @@
+{{extend 'layout.html'}}
+<script src="{{=URL('static','js/jqprint.js')}}"></script>
+<div class="form_header row_buttons  "><a class="w2p_trap button btn" href="{{=session.pag_previa}}"><span class="icon leftarrow icon-arrow-left"></span><span class="buttontext button" title="Back">Regresar</span></a><a class="w2p_trap button btn" onclick="javascript:$('#reporte').jqprint();"><span class="icon print icon-print"></span><span class="buttontext button" title="Edit">Imprimir</span></a><a class="w2p_trap button btn" href="/sicoin/correspondencia/editar_correspondencia_departamento/{{=id}}"><span class="icon pen icon-pencil"></span><span class="buttontext button" title="Edit">Editar</span></a></div>
+<div id="reporte">
+{{=form}}
+</div>
+<script>
+strfecha = $("#correspondencia_fecha_correspondencia__label").parent().next().html();
+dateParts = strfecha.split("-");
+fecha = new Date(dateParts[2], (dateParts[1] - 1), dateParts[0]);
+var diasemana = "";
+dia = fecha.getDay();
+switch(fecha.getDay()){
+    case 0: diasemana = "Domingo";
+            break
+    case 1: diasemana = "Lunes";
+            break
+    case 2: diasemana = "Martes";
+            break
+    case 3: diasemana = "Miercoles";
+            break
+    case 4: diasemana = "Jueves";
+            break
+    case 5: diasemana = "Viernes";
+            break
+    default: diasemana = "Sabado";
+            break
+}
+$("#correspondencia_fecha_correspondencia__label").parent().next().html(diasemana + ", " + strfecha);
+</script>

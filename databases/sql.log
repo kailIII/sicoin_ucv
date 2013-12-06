@@ -1,0 +1,211 @@
+timestamp: 2012-10-19T11:29:54.825350
+CREATE TABLE dependencia(
+    id INT AUTO_INCREMENT NOT NULL,
+    dependencia VARCHAR(100) NOT NULL UNIQUE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2012-10-19T11:29:54.908685
+CREATE TABLE departamento(
+    id INT AUTO_INCREMENT NOT NULL,
+    departamento VARCHAR(100) NOT NULL,
+    dependencia INT, INDEX dependencia__idx (dependencia), FOREIGN KEY (dependencia) REFERENCES dependencia (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2012-10-19T11:29:54.987560
+CREATE TABLE auth_user(
+    id INT AUTO_INCREMENT NOT NULL,
+    first_name VARCHAR(128),
+    last_name VARCHAR(128),
+    email VARCHAR(255),
+    password VARCHAR(255),
+    registration_key VARCHAR(255),
+    reset_password_key VARCHAR(255),
+    registration_id VARCHAR(255),
+    departamento INT, INDEX departamento__idx (departamento), FOREIGN KEY (departamento) REFERENCES departamento (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2012-10-19T11:29:55.282941
+CREATE TABLE auth_group(
+    id INT AUTO_INCREMENT NOT NULL,
+    role VARCHAR(255),
+    description LONGTEXT,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2012-10-19T11:29:55.476025
+CREATE TABLE auth_membership(
+    id INT AUTO_INCREMENT NOT NULL,
+    user_id INT, INDEX user_id__idx (user_id), FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE CASCADE,
+    group_id INT, INDEX group_id__idx (group_id), FOREIGN KEY (group_id) REFERENCES auth_group (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2012-10-19T11:29:55.585891
+CREATE TABLE auth_permission(
+    id INT AUTO_INCREMENT NOT NULL,
+    group_id INT, INDEX group_id__idx (group_id), FOREIGN KEY (group_id) REFERENCES auth_group (id) ON DELETE CASCADE,
+    name VARCHAR(255),
+    table_name VARCHAR(255),
+    record_id INT,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2012-10-19T11:29:55.653767
+CREATE TABLE auth_event(
+    id INT AUTO_INCREMENT NOT NULL,
+    time_stamp DATETIME,
+    client_ip VARCHAR(255),
+    user_id INT, INDEX user_id__idx (user_id), FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE CASCADE,
+    origin VARCHAR(255),
+    description LONGTEXT,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2012-10-19T11:29:55.719265
+CREATE TABLE auth_cas(
+    id INT AUTO_INCREMENT NOT NULL,
+    user_id INT, INDEX user_id__idx (user_id), FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE CASCADE,
+    created_on DATETIME,
+    service VARCHAR(255),
+    ticket VARCHAR(255),
+    renew CHAR(1),
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2012-10-19T11:29:55.806820
+CREATE TABLE estatus(
+    id INT AUTO_INCREMENT NOT NULL,
+    tipo_estatus VARCHAR(100) NOT NULL UNIQUE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2012-10-19T11:29:55.877920
+CREATE TABLE documento(
+    id INT AUTO_INCREMENT NOT NULL,
+    tipo_de_documento VARCHAR(100) NOT NULL UNIQUE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2012-10-19T11:29:55.954278
+CREATE TABLE correspondencia(
+    id INT AUTO_INCREMENT NOT NULL,
+    nro_de_documento VARCHAR(100) NOT NULL,
+    fecha_registro DATETIME,
+    fecha_correspondencia DATE NOT NULL,
+    tipo_de_documento INT, INDEX tipo_de_documento__idx (tipo_de_documento), FOREIGN KEY (tipo_de_documento) REFERENCES documento (id) ON DELETE CASCADE,
+    estatus INT, INDEX estatus__idx (estatus), FOREIGN KEY (estatus) REFERENCES estatus (id) ON DELETE CASCADE,
+    remitente VARCHAR(100) NOT NULL,
+    departamento_origen INT, INDEX departamento_origen__idx (departamento_origen), FOREIGN KEY (departamento_origen) REFERENCES departamento (id) ON DELETE CASCADE,
+    destinatario VARCHAR(100) NOT NULL,
+    departamento_destino INT, INDEX departamento_destino__idx (departamento_destino), FOREIGN KEY (departamento_destino) REFERENCES departamento (id) ON DELETE CASCADE,
+    asunto VARCHAR(100) NOT NULL,
+    observaciones LONGTEXT,
+    asignado_a INT, INDEX asignado_a__idx (asignado_a), FOREIGN KEY (asignado_a) REFERENCES auth_user (id) ON DELETE CASCADE,
+    registrado_por INT, INDEX registrado_por__idx (registrado_por), FOREIGN KEY (registrado_por) REFERENCES auth_user (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2012-10-19T11:29:56.198377
+CREATE TABLE correspondencia_archive(
+    id INT AUTO_INCREMENT NOT NULL,
+    current_record INT, INDEX current_record__idx (current_record), FOREIGN KEY (current_record) REFERENCES correspondencia (id) ON DELETE CASCADE,
+    nro_de_documento VARCHAR(100) NOT NULL,
+    fecha_registro DATETIME,
+    fecha_correspondencia DATE NOT NULL,
+    tipo_de_documento INT, INDEX tipo_de_documento__idx (tipo_de_documento), FOREIGN KEY (tipo_de_documento) REFERENCES documento (id) ON DELETE CASCADE,
+    estatus INT, INDEX estatus__idx (estatus), FOREIGN KEY (estatus) REFERENCES estatus (id) ON DELETE CASCADE,
+    remitente VARCHAR(100) NOT NULL,
+    departamento_origen INT, INDEX departamento_origen__idx (departamento_origen), FOREIGN KEY (departamento_origen) REFERENCES departamento (id) ON DELETE CASCADE,
+    destinatario VARCHAR(100) NOT NULL,
+    departamento_destino INT, INDEX departamento_destino__idx (departamento_destino), FOREIGN KEY (departamento_destino) REFERENCES departamento (id) ON DELETE CASCADE,
+    asunto VARCHAR(100) NOT NULL,
+    observaciones LONGTEXT,
+    asignado_a INT, INDEX asignado_a__idx (asignado_a), FOREIGN KEY (asignado_a) REFERENCES auth_user (id) ON DELETE CASCADE,
+    registrado_por INT, INDEX registrado_por__idx (registrado_por), FOREIGN KEY (registrado_por) REFERENCES auth_user (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+success!
+timestamp: 2012-10-19T11:51:15.027999
+ALTER TABLE correspondencia_archive ADD modificado_por INT, ADD INDEX modificado_por__idx (modificado_por), ADD FOREIGN KEY (modificado_por) REFERENCES auth_user (id) ON DELETE CASCADE;
+success!
+timestamp: 2012-10-19T14:09:07.749034
+ALTER TABLE correspondencia_archive ADD modificado_el DATETIME;
+success!
+timestamp: 2012-10-19T16:10:34.412932
+ALTER TABLE correspondencia ADD modificado_el DATETIME;
+success!
+timestamp: 2012-10-19T16:10:34.640926
+ALTER TABLE correspondencia ADD modificado_por INT, ADD INDEX modificado_por__idx (modificado_por), ADD FOREIGN KEY (modificado_por) REFERENCES auth_user (id) ON DELETE CASCADE;
+success!
+timestamp: 2012-10-31T15:11:04.615918
+ALTER TABLE correspondencia ADD ver VARCHAR(255);
+success!
+timestamp: 2012-10-31T15:11:05.167173
+ALTER TABLE correspondencia_archive ADD ver VARCHAR(255);
+success!
+timestamp: 2012-10-31T15:15:29.206489
+ALTER TABLE correspondencia DROP COLUMN ver;
+success!
+timestamp: 2012-10-31T15:15:29.526884
+ALTER TABLE correspondencia_archive DROP COLUMN ver;
+success!
+timestamp: 2012-12-03T06:34:36.334831
+ALTER TABLE correspondencia ADD asunto__tmp VARCHAR(100);
+success!
+UPDATE correspondencia SET asunto__tmp=asunto;
+success!
+ALTER TABLE correspondencia DROP COLUMN asunto;
+success!
+ALTER TABLE correspondencia ADD asunto VARCHAR(100);
+success!
+UPDATE correspondencia SET asunto=asunto__tmp;
+success!
+ALTER TABLE correspondencia DROP COLUMN asunto__tmp;
+success!
+timestamp: 2012-12-03T06:34:37.660451
+ALTER TABLE correspondencia_archive ADD asunto__tmp VARCHAR(100);
+success!
+UPDATE correspondencia_archive SET asunto__tmp=asunto;
+success!
+ALTER TABLE correspondencia_archive DROP COLUMN asunto;
+success!
+ALTER TABLE correspondencia_archive ADD asunto VARCHAR(100);
+success!
+UPDATE correspondencia_archive SET asunto=asunto__tmp;
+success!
+ALTER TABLE correspondencia_archive DROP COLUMN asunto__tmp;
+success!
+timestamp: 2012-12-03T07:02:03.846137
+ALTER TABLE correspondencia ADD asignado_a__tmp VARCHAR(255);
+success!
+UPDATE correspondencia SET asignado_a__tmp=asignado_a;
+success!
+ALTER TABLE correspondencia DROP COLUMN asignado_a;
+timestamp: 2013-01-13T10:42:51.279836
+CREATE TABLE dependencia(
+    id INT AUTO_INCREMENT NOT NULL,
+    dependencia VARCHAR(100) NOT NULL UNIQUE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+timestamp: 2013-01-13T10:44:50.525853
+CREATE TABLE auth_user(
+    id INT AUTO_INCREMENT NOT NULL,
+    first_name VARCHAR(128),
+    last_name VARCHAR(128),
+    email VARCHAR(255),
+    password VARCHAR(255),
+    registration_key VARCHAR(255),
+    reset_password_key VARCHAR(255),
+    registration_id VARCHAR(255),
+    departamento INT, INDEX departamento__idx (departamento), FOREIGN KEY (departamento) REFERENCES departamento (id) ON DELETE CASCADE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;
+timestamp: 2013-01-13T10:45:03.276998
+CREATE TABLE dependencia(
+    id INT AUTO_INCREMENT NOT NULL,
+    dependencia VARCHAR(100) NOT NULL UNIQUE,
+    PRIMARY KEY(id)
+) ENGINE=InnoDB CHARACTER SET utf8;

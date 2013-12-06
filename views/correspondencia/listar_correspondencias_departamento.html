@@ -1,0 +1,22 @@
+{{extend 'layout.html'}}
+<table>
+    <tr>
+        <td>Leyenda de colores:</td>
+        <td>
+            <table border = '1'>
+                <tr>
+                    <td><font color='red'>Rojo</font>: Sin procesar</td>
+                	<td><font color='green'>Verde</font>: procesado</td>
+                	<td><font color='blue'>Azul</font>: procesado por otro usuario</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+{{=grid}}
+<script>
+    $(document).ready(function() {  
+       $('td:nth-child(6),th:nth-child(6)').hide();
+       $('td:nth-child(7),th:nth-child(7)').hide();
+     });
+</script>

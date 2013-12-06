@@ -1,0 +1,3 @@
+{{extend 'layout.html'}}
+<h5>Seleccione un Tipo de Documento para generar una correspondencia m&uacute;ltiple <br /> a la Dependencia correspondiente</h5>
+{{=form}}

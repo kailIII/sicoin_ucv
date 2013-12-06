@@ -1,0 +1,425 @@
+(dp1
+S'output'
+p2
+S'<type \'exceptions.RuntimeError\'> Failure to connect, tried 5 times:\nTraceback (most recent call last):\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 7522, in __init__\n    self._adapter = ADAPTERS[self._dbname](**kwargs)\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 2569, in __init__\n    if do_connect: self.reconnect()\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 606, in reconnect\n    self.connection = f()\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 2567, in connector\n    return self.driver.connect(**driver_args)\n  File "/home/perdomor/Escritorio/web2py/gluon/contrib/pymysql/__init__.py", line 93, in Connect\n    return Connection(*args, **kwargs)\n  File "/home/perdomor/Escritorio/web2py/gluon/contrib/pymysql/connections.py", line 575, in __init__\n    self._connect()\n  File "/home/perdomor/Escritorio/web2py/gluon/contrib/pymysql/connections.py", line 743, in _connect\n    raise OperationalError(2003, "Can\'t connect to MySQL server on %r (%s)" % (self.host, e.args[0]))\nOperationalError: (2003, "Can\'t connect to MySQL server on \'190.169.221.33\' (111)")\n'
+p3
+sS'layer'
+p4
+S'/home/perdomor/Escritorio/web2py/applications/sicoin/models/db.py'
+p5
+sS'code'
+p6
+S'# -*- coding: utf-8 -*-\n\n#########################################################################\n## This scaffolding model makes your app work on Google App Engine too\n## File is released under public domain and you can use without limitations\n#########################################################################\n\n## if SSL/HTTPS is properly configured and you want all HTTP requests to\n## be redirected to HTTPS, uncomment the line below:\n# request.requires_https()\n\nif not request.env.web2py_runtime_gae:\n    ## if NOT running on Google App Engine use SQLite or other DB\n    db = DAL(\'mysql://root:*forint49*@190.169.221.33/db_sicoin\', migrate_enabled=False)\nelse:\n    ## connect to Google BigTable (optional \'google:datastore://namespace\')\n    db = DAL(\'google:datastore\')\n    ## store sessions and tickets there\n    session.connect(request, response, db = db)\n    ## or store session in Memcache, Redis, etc.\n    ## from gluon.contrib.memdb import MEMDB\n    ## from google.appengine.api.memcache import Client\n    ## session.connect(request, response, db = MEMDB(Client()))\n\n## by default give a view/generic.extension to all actions from localhost\n## none otherwise. a pattern can be \'controller/function.extension\'\nresponse.generic_patterns = [\'*\'] if request.is_local else []\n## (optional) optimize handling of static files\n# response.optimize_css = \'concat,minify,inline\'\n# response.optimize_js = \'concat,minify,inline\'\n\n#########################################################################\n## Here is sample code if you need for\n## - email capabilities\n## - authentication (registration, login, logout, ... )\n## - authorization (role based authorization)\n## - services (xml, csv, json, xmlrpc, jsonrpc, amf, rss)\n## - old style crud actions\n## (more options discussed in gluon/tools.py)\n#########################################################################\n\ndb.define_table(\'dependencia\',\n    Field(\'dependencia\', \'string\', length=100, required= True, notnull=True, unique=True),\n    format = "%(dependencia)s",\n    singular = "Dependencia",\n    plural = "Dependencias",    \n)\n\n#db.dependencia.id.format = "%(nombre)s"\n#db.dependencia.id.represent= lambda id, row: db.dependencia[id].nombre\n\ndb.define_table(\'departamento\',\n    Field(\'departamento\', \'string\', length=100, required= True, notnull=True),\n    Field(\'dependencia\', \'reference dependencia\'),\n    format = "%(departamento)s",\n    singular = "Departamento",\n    plural = "Departamentos",    \n)\n#db.departamento.dependencia.requires = IS_IN_DB(db, \'dependencia.id\', \'%(nombre)s\', \n #                                              zero=\'--Seleccione una dependencia--\', error_message=\'Valor no Permitido\')\n\n\nfrom gluon.tools import Auth, Crud, Service, PluginManager, prettydate\nauth = Auth(db)\nauth.settings.cas_domains.append(\'http://190.169.221.43:8080\')\ncrud, service, plugins = Crud(db), Service(), PluginManager()\n\n## create all tables needed by auth if not custom tables\n# after\n# auth = Auth(globals(),db)\n#db.define_table(\n#    auth.settings.table_user_name,\n#    Field(\'first_name\', length=128, label = \'nombre\'),\n#    Field(\'last_name\', length=128, label = \'apellido\'),\n#    Field(\'email\', length=128, unique=True),\n#    Field(\'password\', \'password\', length=512, readable=False, label=\'Password\'),\n#    Field(\'registration_key\', length=512, writable=False, readable=False, default=\'\'),\n#    Field(\'reset_password_key\', length=512, writable=False, readable=False, default=\'\'),\n#    Field(\'registration_id\', length=512, writable=False, readable=False, default=\'\'),\n#    Field(\'departamento\', \'reference departamento\'),\n#    )\n#    \n#custom_auth_table = db[auth.settings.table_user_name] # get the custom_auth_table\n#custom_auth_table.first_name.requires = IS_NOT_EMPTY(error_message=auth.messages.is_empty)\n#custom_auth_table.last_name.requires = IS_NOT_EMPTY(error_message=auth.messages.is_empty)\n#custom_auth_table.password.requires = [CRYPT()]\n#custom_auth_table.email.requires = [IS_EMAIL(error_message=auth.messages.invalid_email),\n#                                    IS_NOT_IN_DB(db, custom_auth_table.email)]\n#auth.settings.table_user = custom_auth_table # tell auth to use custom_auth_table\n# before\n# auth.define_tables()\nauth.settings.extra_fields[\'auth_user\'] = [Field(\'departamento\', \'reference departamento\')]\nauth.define_tables(username=False, signature=False)\n\n## configure email\nmail=auth.settings.mailer\nmail.settings.server = \'logging\' or \'smtp.gmail.com:587\'\nmail.settings.sender = \'you@gmail.com\'\nmail.settings.login = \'username:password\'\n\n## configure auth policy\nauth.settings.registration_requires_verification = False\nauth.settings.registration_requires_approval = False\nauth.settings.reset_password_requires_verification = True\ndb.auth_user._represent = \'%(first_name)s %(last_name)s\'\ndb.auth_user._format = \'%(first_name)s %(last_name)s\'\n\n## if you need to use OpenID, Facebook, MySpace, Twitter, Linkedin, etc.\n## register with janrain.com, write your domain:api_key in private/janrain.key\nfrom gluon.contrib.login_methods.rpx_account import use_janrain\nuse_janrain(auth,filename=\'private/janrain.key\')\n\n#########################################################################\n## Define your tables below (or better in another model file) for example\n##\n## >>> db.define_table(\'mytable\',Field(\'myfield\',\'string\'))\n##\n## Fields can be \'string\',\'text\',\'password\',\'integer\',\'double\',\'boolean\'\n##       \'date\',\'time\',\'datetime\',\'blob\',\'upload\', \'reference TABLENAME\'\n## There is an implicit \'id integer autoincrement\' field\n## Consult manual for more options, validators, etc.\n##\n## More API examples for controllers:\n##\n## >>> db.mytable.insert(myfield=\'value\')\n## >>> rows=db(db.mytable.myfield==\'value\').select(db.mytable.ALL)\n## >>> for row in rows: print row.id, row.myfield\n#########################################################################\n\n## after defining tables, uncomment below to enable auditing\n# auth.enable_record_versioning(db)\n\nmail.settings.server = settings.email_server\nmail.settings.sender = settings.email_sender\nmail.settings.login = settings.email_login\n\ndb.define_table(\'estatus\',\n    Field(\'tipo_estatus\', \'string\', length=100, required= True, notnull=True, unique=True),\n    format = "%(tipo_estatus)s",\n    singular = "Estatus",\n    plural = "Estatus",    \n)\n\ndb.define_table(\'documento\',\n    Field(\'tipo_de_documento\', \'string\', length=100, required= True, notnull=True, unique=True, label="Cod. Documento"),\n    format = "%(tipo_de_documento)s",\n    singular = "Tipo de documento",\n    plural = "Tipos de documentos",    \n)\n\ndb.define_table(\'correspondencia\',\n    Field(\'nro_de_documento\', \'string\', length=100, required= True, notnull=True,label="Cod. Documento"),\n    Field(\'fecha_registro\', \'datetime\', default=request.now,writable=False,readable=False),\n    Field(\'fecha_correspondencia\', \'date\', required= True, notnull=True),\n    Field(\'tipo_de_documento\', \'reference documento\'),\n    Field(\'estatus\', \'reference estatus\'),\n    Field(\'remitente\', \'string\', length=100, required= True, notnull=True),\n    Field(\'departamento_origen\', \'reference departamento\'),\n    Field(\'destinatario\', \'string\', length=100, required= True, notnull=True),\n    Field(\'departamento_destino\', \'reference departamento\'),\n    Field(\'asunto\', \'string\', length=100, notnull=False),\n    Field(\'observaciones\', \'text\', length=250, notnull=False),\n    Field(\'asignado_a\', db.auth_user),\n    Field(\'registrado_por\', db.auth_user, default = (auth.user.id) if auth.user else None, writable=False,readable=True),\n    Field(\'modificado_por\', db.auth_user, default = (auth.user.id) if auth.user else None, writable=True,readable=False, update = (auth.user.id) if auth.user else None),  \n                           #format= \'%(auth_user.first_name)s\'),# if auth.user else None),\n   Field(\'modificado_el\', \'datetime\', default=request.now,writable=True,readable=False, update=request.now),\n    #format = "%(nro_de_documento)s",\n    singular = "Dependencia",\n    plural = "Dependencias",    \n)\n\ndb.correspondencia.fecha_registro.represent = lambda value, row: value.strftime("%d-%m-%Y %H:%M:%S")\ndb.correspondencia.modificado_el.represent = lambda value, row: value.strftime("%d-%m-%Y %H:%M:%S")\ndb.correspondencia.modificado_por.requires = IS_IN_DB(db, \'auth_user.id\',\'%(first_name)s %(last_name)s\')\ndb.correspondencia.estatus.represent = lambda value, row: colorearEstatus(value, row)\n#db.correspondencia.fecha_correspondencia.requires = IS_DATE(format = \'%d-%m-%Y\', error_message=\'El formato de fecha debe ser dd-mm-aaaa\')\n\ndef colorearEstatus(value, row):\n    registro = db(db.estatus.id==value).select(db.estatus.tipo_estatus).first()\n    resultado = registro[\'tipo_estatus\']\n    #si el documento ha sido modificado por el usuario, colorear verde\n    if (row[\'modificado_por\'] == auth.user.id):\n        color = \'color:green\'\n    elif (row[\'modificado_por\'] != row[\'registrado_por\']):\n        color = \'color:blue\'\n    else:\n        color = \'color:red\'\n    \n    return DIV(resultado, _style=color)\n\ndb.correspondencia.id.readable = False\nif auth.is_logged_in():\n    db.correspondencia.asignado_a.requires = IS_EMPTY_OR(IS_IN_DB(db(db.auth_user.departamento), db.auth_user.id,\'%(first_name)s %(last_name)s\'))\ndb.correspondencia.departamento_origen.requires = IS_IN_DB(db, db.departamento.id, \'%(departamento)s\')                                               \ndb.correspondencia.departamento_destino.requires = IS_IN_DB(db, db.departamento.id, \'%(departamento)s\')\n                                              \nclass CascadingSelect(object):\n    def __init__(self, *tables):\n        self.tables = tables \n        self.prompt = lambda table:str(table)   \n    def widget(self,f,v):\n        import uuid\n        uid = str(uuid.uuid4())[:8]\n        d_id = "cascade-" + uid\n        wrapper = TABLE(_id=d_id)\n        parent = None; parent_format = None; \n        fn =  \'\' \n        vr = \'var dd%s = [];var oi%s = [];\\n\' % (uid,uid)\n        prompt = [self.prompt(table) for table in self.tables]\n        vr += \'var pr%s = ["\' % uid + \'","\'.join([str(p) for p in prompt]) + \'"];\\n\' \n        f_inp = SQLFORM.widgets.string.widget(f,v)\n        f_id = f_inp[\'_id\']\n        f_inp[\'_type\'] = "hidden"\n        for tc, table in enumerate(self.tables):             \n            db = table._db     \n            format = table._format            \n            options = db(table[\'id\']>0).select()\n            id = str(table) + \'_\' + format[2:-2]             \n            opts = [OPTION(format % opt,_value=opt.id,\n                                 _parent=opt[str(parent)] if parent else \'0\') \\\n                                  for opt in options]\n            opts.insert(0, OPTION(prompt[tc],_value=0))\n            inp = SELECT(opts ,_parent=str(parent) + \\\n                                  "_" + str(parent_format),\n                                  _id=id,_name=id,\n                                  _disabled="disabled" if parent else None)\n            wrapper.append(TR(inp))\n            next = str(tc + 1)\n            vr += \'var p%s = jQuery("#%s #%s"); dd%s.push(p%s);\\n\' % (tc,d_id,id,uid,tc)            \n            vr += \'var i%s = jQuery("option",p%s).clone(); oi%s.push(i%s);\\n\' % (tc,tc,uid,tc)\n            fn_in = \'for (i=%s;i<%s;i+=1){dd%s[i].find("option").remove();\'\\\n                    \'dd%s[i].append(\\\'<option value="0">\\\' + pr%s[i] + \\\'</option>\\\');\'\\\n                    \'dd%s[i].attr("disabled","disabled");}\\n\' % \\\n                           (next,len(self.tables),uid,uid,uid,uid)\n            fn_in +=\'oi%s[%s].each(function(i){\'\\\n                    \'if (jQuery(this).attr("parent") == dd%s[%s].val()){\'\\\n                    \'dd%s[%s].append(this);}});\' % (uid,next,uid,tc,uid,next)            \n            fn_in += \'dd%s[%s].removeAttr("disabled");\\n\' % (uid,next)\n            fn_in += \'jQuery("#%s").val("");\' % f_id\n            if (tc < len(self.tables)-1):\n                fn += \'dd%s[%s].change(function(){%s});\\n\' % (uid,tc,fn_in) \n            else:\n                fn_in = \'jQuery("#%s").val(jQuery(this).val());\' % f_id\n                fn += \'dd%s[%s].change(function(){%s});\\n\' % (uid,tc,fn_in)\n                if v:\n                    fn += \'dd%s[%s].val(%s);\' % (uid,tc,v)                       \n            parent = table\n            parent_format = format[2:-2]\n\n        wrapper.append(f_inp)\n        wrapper.append(SCRIPT(vr,fn))\n        return wrapper\n                                               \ncascade = CascadingSelect(db.dependencia,db.departamento)\ncascade.prompt = lambda table: "Seleccione "  + ("una " if str(table)[0] in \'aeiou\' else "un ") + str(table)\ndb.auth_user.departamento.widget = cascade.widget\ndb.correspondencia.departamento_origen.widget = cascade.widget\ndb.correspondencia.departamento_destino.widget = cascade.widget\n\ndb.define_table(\'correspondencia_archive\',\n   Field(\'current_record\', \'reference correspondencia\'), \n   db.correspondencia)\n'
+p7
+sS'snapshot'
+p8
+(dp9
+S'exception'
+p10
+(dp11
+S'__hash__'
+p12
+S"<method-wrapper '__hash__' of exceptions.RuntimeError object>"
+p13
+sS'__setattr__'
+p14
+S"<method-wrapper '__setattr__' of exceptions.RuntimeError object>"
+p15
+sS'__reduce_ex__'
+p16
+S'<built-in method __reduce_ex__ of exceptions.RuntimeError object>'
+p17
+sS'__getslice__'
+p18
+S"<method-wrapper '__getslice__' of exceptions.RuntimeError object>"
+p19
+sS'__getitem__'
+p20
+S"<method-wrapper '__getitem__' of exceptions.RuntimeError object>"
+p21
+sS'__setstate__'
+p22
+S'<built-in method __setstate__ of exceptions.RuntimeError object>'
+p23
+sS'__reduce__'
+p24
+S'<built-in method __reduce__ of exceptions.RuntimeError object>'
+p25
+sS'__str__'
+p26
+S"<method-wrapper '__str__' of exceptions.RuntimeError object>"
+p27
+sS'__format__'
+p28
+S'<built-in method __format__ of exceptions.RuntimeError object>'
+p29
+sS'__getattribute__'
+p30
+S"<method-wrapper '__getattribute__' of exceptions.RuntimeError object>"
+p31
+sS'__class__'
+p32
+S"<type 'exceptions.RuntimeError'>"
+p33
+sS'__unicode__'
+p34
+S'<built-in method __unicode__ of exceptions.RuntimeError object>'
+p35
+sS'__delattr__'
+p36
+S"<method-wrapper '__delattr__' of exceptions.RuntimeError object>"
+p37
+sS'__subclasshook__'
+p38
+S'<built-in method __subclasshook__ of type object>'
+p39
+sS'__repr__'
+p40
+S"<method-wrapper '__repr__' of exceptions.RuntimeError object>"
+p41
+sS'args'
+p42
+S'(\'Failure to connect, tried 5 times:\\nTraceback (mo...nect to MySQL server on \\\'190.169.221.33\\\' (111)")\\n\',)'
+p43
+sS'__dict__'
+p44
+S'{}'
+p45
+sS'__sizeof__'
+p46
+S'<built-in method __sizeof__ of exceptions.RuntimeError object>'
+p47
+sS'__doc__'
+p48
+S"'Unspecified run-time error.'"
+p49
+sS'__init__'
+p50
+S"<method-wrapper '__init__' of exceptions.RuntimeError object>"
+p51
+sS'__new__'
+p52
+S'<built-in method __new__ of type object>'
+p53
+ssS'evalue'
+p54
+S'Failure to connect, tried 5 times:\nTraceback (most recent call last):\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 7522, in __init__\n    self._adapter = ADAPTERS[self._dbname](**kwargs)\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 2569, in __init__\n    if do_connect: self.reconnect()\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 606, in reconnect\n    self.connection = f()\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 2567, in connector\n    return self.driver.connect(**driver_args)\n  File "/home/perdomor/Escritorio/web2py/gluon/contrib/pymysql/__init__.py", line 93, in Connect\n    return Connection(*args, **kwargs)\n  File "/home/perdomor/Escritorio/web2py/gluon/contrib/pymysql/connections.py", line 575, in __init__\n    self._connect()\n  File "/home/perdomor/Escritorio/web2py/gluon/contrib/pymysql/connections.py", line 743, in _connect\n    raise OperationalError(2003, "Can\'t connect to MySQL server on %r (%s)" % (self.host, e.args[0]))\nOperationalError: (2003, "Can\'t connect to MySQL server on \'190.169.221.33\' (111)")\n'
+p55
+sS'request'
+p56
+cgluon.html
+XML_unpickle
+p57
+(S's\xbfE\x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">ajax</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">application</td><td style="vertical-align:top;">:</td><td><div>sicoin</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">args</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cid</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">client</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">controller</td><td style="vertical-align:top;">:</td><td><div>default</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cookies</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">env</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT</td><td style="vertical-align:top;">:</td><td><div>text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT_ENCODING</td><td style="vertical-align:top;">:</td><td><div>gzip,deflate,sdch</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT_LANGUAGE</td><td style="vertical-align:top;">:</td><td><div>es-419,es;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_CONNECTION</td><td style="vertical-align:top;">:</td><td><div>keep-alive</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_HOST</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1:8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_USER_AGENT</td><td style="vertical-align:top;">:</td><td><div>Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.76 Safari/537.36</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">PATH_INFO</td><td style="vertical-align:top;">:</td><td><div>/sicoin</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">QUERY_STRING</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REMOTE_ADDR</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REMOTE_PORT</td><td style="vertical-align:top;">:</td><td><div>44628</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REQUEST_METHOD</td><td style="vertical-align:top;">:</td><td><div>GET</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SCRIPT_NAME</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_NAME</td><td style="vertical-align:top;">:</td><td><div>perdomor</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_PORT</td><td style="vertical-align:top;">:</td><td><div>8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_PROTOCOL</td><td style="vertical-align:top;">:</td><td><div>HTTP/1.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_SOFTWARE</td><td style="vertical-align:top;">:</td><td><div>Rocket 1.2.6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">app_folders</td><td style="vertical-align:top;">:</td><td><div>set([&#x27;/home/perdomor/Escritorio/web2py/applications/sicoin/&#x27;])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">applications_parent</td><td style="vertical-align:top;">:</td><td><div>/home/perdomor/Escritorio/web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_args</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_options</td><td style="vertical-align:top;">:</td><td><div>&lt;Values at 0xad7c90c: {&#x27;verbose&#x27;: False, &#x27;ip&#x27;: &#x27;0.0.0.0&#x27;, &#x27;debuglevel&#x27;: 30, &#x27;with_scheduler&#x27;: False, &#x27;ips&#x27;: [&#x27;190.169.221.43&#x27;], &#x27;shutdown_timeout&#x27;: 5, &#x27;taskbar&#x27;: False, &#x27;with_coverage&#x27;: False, &#x27;port&#x27;: 8000, &#x27;maxthreads&#x27;: None, &#x27;softcron&#x27;: False, &#x27;server_name&#x27;: &#x27;perdomor&#x27;, &#x27;bpython&#x27;: False, &#x27;nogui&#x27;: True, &#x27;pid_filename&#x27;: &#x27;httpserver.pid&#x27;, &#x27;extcron&#x27;: False, &#x27;runcron&#x27;: False, &#x27;run_system_tests&#x27;: False, &#x27;test&#x27;: None, &#x27;folder&#x27;: &#x27;/home/perdomor/Escritorio/web2py&#x27;, &#x27;config&#x27;: &#x27;&#x27;, &#x27;import_models&#x27;: False, &#x27;winservice&#x27;: &#x27;&#x27;, &#x27;shell&#x27;: None, &#x27;run&#x27;: &#x27;&#x27;, &#x27;log_filename&#x27;: &#x27;httpserver.log&#x27;, &#x27;profiler_dir&#x27;: None, &#x27;args&#x27;: [&#x27;&#x27;], &#x27;socket_timeout&#x27;: 5, &#x27;ssl_ca_certificate&#x27;: None, &#x27;scheduler&#x27;: None, &#x27;interfaces&#x27;: None, &#x27;ssl_private_key&#x27;: &#x27;&#x27;, &#x27;scheduler_groups&#x27;: None, &#x27;password&#x27;: &#x27;12345&#x27;, &#x27;request_queue_size&#x27;: 5, &#x27;ssl_certificate&#x27;: &#x27;&#x27;, &#x27;cronjob&#x27;: False, &#x27;numthreads&#x27;: None, &#x27;quiet&#x27;: False, &#x27;minthreads&#x27;: None, &#x27;timeout&#x27;: 10, &#x27;plain&#x27;: False, &#x27;nobanner&#x27;: False}&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">db_sessions</td><td style="vertical-align:top;">:</td><td><div>set([])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">debugging</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">gluon_parent</td><td style="vertical-align:top;">:</td><td><div>/home/perdomor/Escritorio/web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept</td><td style="vertical-align:top;">:</td><td><div>text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept_encoding</td><td style="vertical-align:top;">:</td><td><div>gzip,deflate,sdch</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept_language</td><td style="vertical-align:top;">:</td><td><div>es-419,es;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_connection</td><td style="vertical-align:top;">:</td><td><div>keep-alive</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_host</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1:8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_user_agent</td><td style="vertical-align:top;">:</td><td><div>Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.76 Safari/537.36</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_jython</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_pypy</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_source</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path_info</td><td style="vertical-align:top;">:</td><td><div>/sicoin</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">query_string</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remote_addr</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remote_port</td><td style="vertical-align:top;">:</td><td><div>44628</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">request_method</td><td style="vertical-align:top;">:</td><td><div>GET</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">request_uri</td><td style="vertical-align:top;">:</td><td><div>/sicoin</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">script_name</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_name</td><td style="vertical-align:top;">:</td><td><div>perdomor</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_port</td><td style="vertical-align:top;">:</td><td><div>8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_protocol</td><td style="vertical-align:top;">:</td><td><div>HTTP/1.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_software</td><td style="vertical-align:top;">:</td><td><div>Rocket 1.2.6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_path</td><td style="vertical-align:top;">:</td><td><div>/home/perdomor/Escritorio/web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_version</td><td style="vertical-align:top;">:</td><td><div>2.6.4-stable+timestamp.2013.09.22.01.43.37</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.errors</td><td style="vertical-align:top;">:</td><td><div>&lt;open file &#x27;&lt;stderr&gt;&#x27;, mode &#x27;w&#x27; at 0xb752a0d0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.file_wrapper</td><td style="vertical-align:top;">:</td><td><div>&lt;class wsgiref.util.FileWrapper at 0xa9d7d7c&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.input</td><td style="vertical-align:top;">:</td><td><div>&lt;socket._fileobject object at 0xb47482c&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.multiprocess</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.multithread</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.run_once</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.url_scheme</td><td style="vertical-align:top;">:</td><td><div>http</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.version</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>1</div></td></tr><tr><td><div>0</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_errors</td><td style="vertical-align:top;">:</td><td><div>&lt;open file &#x27;&lt;stderr&gt;&#x27;, mode &#x27;w&#x27; at 0xb752a0d0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_file_wrapper</td><td style="vertical-align:top;">:</td><td><div>&lt;class wsgiref.util.FileWrapper at 0xa9d7d7c&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_input</td><td style="vertical-align:top;">:</td><td><div>&lt;socket._fileobject object at 0xb47482c&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_multiprocess</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_multithread</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_run_once</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_url_scheme</td><td style="vertical-align:top;">:</td><td><div>http</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_version</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>1</div></td></tr><tr><td><div>0</div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">extension</td><td style="vertical-align:top;">:</td><td><div>html</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">folder</td><td style="vertical-align:top;">:</td><td><div>/home/perdomor/Escritorio/web2py/applications/sicoin/</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">function</td><td style="vertical-align:top;">:</td><td><div>index</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">global_settings</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">app_folders</td><td style="vertical-align:top;">:</td><td><div>set([&#x27;/home/perdomor/Escritorio/web2py/applications/sicoin/&#x27;])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">applications_parent</td><td style="vertical-align:top;">:</td><td><div>/home/perdomor/Escritorio/web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_args</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_options</td><td style="vertical-align:top;">:</td><td><div>&lt;Values at 0xad7c90c: {&#x27;verbose&#x27;: False, &#x27;ip&#x27;: &#x27;0.0.0.0&#x27;, &#x27;debuglevel&#x27;: 30, &#x27;with_scheduler&#x27;: False, &#x27;ips&#x27;: [&#x27;190.169.221.43&#x27;], &#x27;shutdown_timeout&#x27;: 5, &#x27;taskbar&#x27;: False, &#x27;with_coverage&#x27;: False, &#x27;port&#x27;: 8000, &#x27;maxthreads&#x27;: None, &#x27;softcron&#x27;: False, &#x27;server_name&#x27;: &#x27;perdomor&#x27;, &#x27;bpython&#x27;: False, &#x27;nogui&#x27;: True, &#x27;pid_filename&#x27;: &#x27;httpserver.pid&#x27;, &#x27;extcron&#x27;: False, &#x27;runcron&#x27;: False, &#x27;run_system_tests&#x27;: False, &#x27;test&#x27;: None, &#x27;folder&#x27;: &#x27;/home/perdomor/Escritorio/web2py&#x27;, &#x27;config&#x27;: &#x27;&#x27;, &#x27;import_models&#x27;: False, &#x27;winservice&#x27;: &#x27;&#x27;, &#x27;shell&#x27;: None, &#x27;run&#x27;: &#x27;&#x27;, &#x27;log_filename&#x27;: &#x27;httpserver.log&#x27;, &#x27;profiler_dir&#x27;: None, &#x27;args&#x27;: [&#x27;&#x27;], &#x27;socket_timeout&#x27;: 5, &#x27;ssl_ca_certificate&#x27;: None, &#x27;scheduler&#x27;: None, &#x27;interfaces&#x27;: None, &#x27;ssl_private_key&#x27;: &#x27;&#x27;, &#x27;scheduler_groups&#x27;: None, &#x27;password&#x27;: &#x27;12345&#x27;, &#x27;request_queue_size&#x27;: 5, &#x27;ssl_certificate&#x27;: &#x27;&#x27;, &#x27;cronjob&#x27;: False, &#x27;numthreads&#x27;: None, &#x27;quiet&#x27;: False, &#x27;minthreads&#x27;: None, &#x27;timeout&#x27;: 10, &#x27;plain&#x27;: False, &#x27;nobanner&#x27;: False}&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">db_sessions</td><td style="vertical-align:top;">:</td><td><div>set([])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">debugging</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">gluon_parent</td><td style="vertical-align:top;">:</td><td><div>/home/perdomor/Escritorio/web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_jython</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_pypy</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_source</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">local_hosts</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>190.169.221.43</div></td></tr><tr><td><div>perdomor</div></td></tr><tr><td><div>::ffff:127.0.0.1</div></td></tr><tr><td><div>::1</div></td></tr><tr><td><div>perdomor.fipu.ucv.ve</div></td></tr><tr><td><div>127.0.0.1</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_version</td><td style="vertical-align:top;">:</td><td><div>2.6.4-stable+timestamp.2013.09.22.01.43.37</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_https</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_local</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_restful</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">now</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2013, 10, 10, 2, 48, 33, 449458)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">raw_args</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">raw_extension</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">url</td><td style="vertical-align:top;">:</td><td><div>/sicoin</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">utcnow</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2013, 10, 10, 7, 18, 33, 449494)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">uuid</td><td style="vertical-align:top;">:</td><td><div>sicoin/127.0.0.1.2013-10-10.02-48-33.67ab7d5b-39df-4755-a9d9-2fa64cdd248d</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi</td><td style="vertical-align:top;">:</td><td><div>&lt;gluon.main.LazyWSGI object at 0xb48dfcc&gt;</div></td></tr></table></div>'
+tRp58
+sS'frames'
+p59
+(lp60
+(dp61
+S'file'
+p62
+S'/home/perdomor/Escritorio/web2py/gluon/restricted.py'
+p63
+sS'dump'
+p64
+(dp65
+S'environment'
+p66
+S"{'A': <class 'gluon.html.A'>, 'ANY_OF': <class 'gluon.validators.ANY_OF'>, 'B': <class 'gluon.html.B'>, 'BEAUTIFY': <class 'gluon.html.BEAUTIFY'>, 'BODY': <class 'gluon.html.BODY'>, 'BR': <class 'gluon.html.BR'>, 'BUTTON': <class 'gluon.html.BUTTON'>, 'CAT': <class 'gluon.html.CAT'>, 'CENTER': <class 'gluon.html.CENTER'>, 'CLEANUP': <class 'gluon.validators.CLEANUP'>, ...}"
+p67
+sS'ccode'
+p68
+S'<code object <module> at 0xb475de8, file "/home/...eb2py/applications/sicoin/models/db.py", line 12>'
+p69
+ssS'lnum'
+p70
+I217
+sS'lines'
+p71
+(dp72
+I212
+S'    try:'
+p73
+sI213
+S'        if isinstance(code, types.CodeType):'
+p74
+sI214
+S'            ccode = code'
+p75
+sI215
+S'        else:'
+p76
+sI216
+S'            ccode = compile2(code, layer)'
+p77
+sI217
+S'        exec ccode in environment'
+p78
+sI218
+S'    except HTTP:'
+p79
+sI219
+S'        raise'
+p80
+sI220
+S'    except RestrictedError:'
+p81
+sI221
+S'        # do not encapsulate (obfuscate) the original RestrictedError'
+p82
+ssS'call'
+p83
+S'(code="# -*- coding: utf-8 -*-\\n\\n#######################...rence correspondencia\'), \\n   db.correspondencia)\\n", environment={\'A\': <class \'gluon.html.A\'>, \'ANY_OF\': <class \'gluon.validators.ANY_OF\'>, \'B\': <class \'gluon.html.B\'>, \'BEAUTIFY\': <class \'gluon.html.BEAUTIFY\'>, \'BODY\': <class \'gluon.html.BODY\'>, \'BR\': <class \'gluon.html.BR\'>, \'BUTTON\': <class \'gluon.html.BUTTON\'>, \'CAT\': <class \'gluon.html.CAT\'>, \'CENTER\': <class \'gluon.html.CENTER\'>, \'CLEANUP\': <class \'gluon.validators.CLEANUP\'>, ...}, layer=\'/home/perdomor/Escritorio/web2py/applications/sicoin/models/db.py\')'
+p84
+sS'func'
+p85
+S'restricted'
+p86
+sa(dp87
+g62
+S'/home/perdomor/Escritorio/web2py/applications/sicoin/models/db.py'
+p88
+sg64
+(dp89
+S'DAL'
+p90
+S"<class 'gluon.dal.DAL'>"
+p91
+sS'db'
+p92
+S'undefined'
+p93
+sS'builtinFalse'
+p94
+S'False'
+p95
+sS'migrate_enabled'
+p96
+g93
+ssg70
+I14
+sg71
+(dp97
+I9
+S'## be redirected to HTTPS, uncomment the line below:'
+p98
+sI10
+S'# request.requires_https()'
+p99
+sI11
+S''
+sI12
+S'if not request.env.web2py_runtime_gae:'
+p100
+sI13
+S'    ## if NOT running on Google App Engine use SQLite or other DB'
+p101
+sI14
+S"    db = DAL('mysql://root:*forint49*@190.169.221.33/db_sicoin', migrate_enabled=False)"
+p102
+sI15
+S'else:'
+p103
+sI16
+S"    ## connect to Google BigTable (optional 'google:datastore://namespace')"
+p104
+sI17
+S"    db = DAL('google:datastore')"
+p105
+sI18
+S'    ## store sessions and tickets there'
+p106
+ssg83
+S'()'
+p107
+sg85
+S'<module>'
+p108
+sa(dp109
+g62
+S'/home/perdomor/Escritorio/web2py/gluon/dal.py'
+p110
+sg64
+(dp111
+S'tb'
+p112
+S'\'Traceback (most recent call last):\\n  File "/home...nect to MySQL server on \\\'190.169.221.33\\\' (111)")\\n\''
+p113
+sS'attempts'
+p114
+S'5'
+sS'builtinRuntimeError'
+p115
+S"<type 'exceptions.RuntimeError'>"
+p116
+ssg70
+I7543
+sg71
+(dp117
+I7538
+S'                if connected:'
+p118
+sI7539
+S'                    break'
+p119
+sI7540
+S'                else:'
+p120
+sI7541
+S'                    time.sleep(1)'
+p121
+sI7542
+S'            if not connected:'
+p122
+sI7543
+S'                raise RuntimeError("Failure to connect, tried %d times:\\n%s" % (attempts, tb))'
+p123
+sI7544
+S'        else:'
+p124
+sI7545
+S'            self._adapter = BaseAdapter(db=self,pool_size=0,'
+p125
+sI7546
+S"                                        uri='None',folder=folder,"
+p126
+sI7547
+S'                                        db_codec=db_codec, after_connection=after_connection)'
+p127
+ssg83
+S'(self=<DAL uri="mysql:******@190.169.221.33/db_sicoin">, uri=\'mysql://root:*forint49*@190.169.221.33/db_sicoin\', pool_size=0, folder=None, db_codec=\'UTF-8\', check_reserved=None, migrate=True, fake_migrate=False, migrate_enabled=False, fake_migrate_all=False, decode_credentials=False, driver_args=None, adapter_args=None, attempts=5, auto_import=False, bigint_id=False, debug=False, lazy_tables=False, db_uid=None, do_connect=True, after_connection=None, tables=None)'
+p128
+sg85
+g50
+sasS'pyver'
+p129
+S'Python 2.7.5+: /usr/bin/python (prefix: /usr)'
+p130
+sS'session'
+p131
+g57
+(S's\x1a\x00\x00\x00<div><table></table></div>'
+tRp132
+sS'etype'
+p133
+S"<type 'exceptions.RuntimeError'>"
+p134
+sS'date'
+p135
+S'Thu Oct 10 02:48:38 2013'
+p136
+sS'response'
+p137
+g57
+(S's\x82\x15\x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">body</td><td style="vertical-align:top;">:</td><td><div>&lt;cStringIO.StringO object at 0xb48dc00&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cookies</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">session_id_sicoin</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1-3db50404-edf4-45ca-944a-3e4049e599e9<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div>/</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">delimiters</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>{{</div></td></tr><tr><td><div>}}</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">files</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">flash</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">generic_patterns</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">headers</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">X-Powered-By</td><td style="vertical-align:top;">:</td><td><div>web2py</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">menu</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">meta</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">models_to_run</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>^\\w+\\.py$</div></td></tr><tr><td><div>^default/\\w+\\.py$</div></td></tr><tr><td><div>^default/index/\\w+\\.py$</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">postprocessing</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_client</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_compression_level</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_expires</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_key</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_data_name</td><td style="vertical-align:top;">:</td><td><div>session_data_sicoin</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_file</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_filename</td><td style="vertical-align:top;">:</td><td><div>/home/perdomor/Escritorio/web2py/applications/sicoin/sessions/127.0.0.1-3db50404-edf4-45ca-944a-3e4049e599e9</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_hash</td><td style="vertical-align:top;">:</td><td><div>106f4c22ca06cc343e42b73a0d8492f6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id</td><td style="vertical-align:top;">:</td><td><div>127.0.0.1-3db50404-edf4-45ca-944a-3e4049e599e9</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id_name</td><td style="vertical-align:top;">:</td><td><div>session_id_sicoin</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_masterapp</td><td style="vertical-align:top;">:</td><td><div>sicoin</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_new</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_storage_type</td><td style="vertical-align:top;">:</td><td><div>file</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">status</td><td style="vertical-align:top;">:</td><td><div>200</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">view</td><td style="vertical-align:top;">:</td><td><div>default/index.html</div></td></tr></table></div>'
+tRp138
+sS'locals'
+p139
+(dp140
+S'migrate'
+p141
+S'True'
+p142
+sS'do_connect'
+p143
+g142
+sS'decode_credentials'
+p144
+g95
+sS'attempts'
+p145
+S'5'
+sS'tables'
+p146
+S'None'
+p147
+sS'driver_args'
+p148
+S'None'
+p149
+sS'self'
+p150
+S'<DAL uri="mysql:******@190.169.221.33/db_sicoin">'
+p151
+sS'auto_import'
+p152
+g95
+sS'migrate_enabled'
+p153
+g95
+sS'check_reserved'
+p154
+S'None'
+p155
+sS'bigint_id'
+p156
+g95
+sS'kwargs'
+p157
+S'{\'adapter_args\': {}, \'after_connection\': None, \'credential_decoder\': <function <lambda>>, \'db\': <DAL uri="mysql:******@190.169.221.33/db_sicoin">, \'db_codec\': \'UTF-8\', \'do_connect\': True, \'driver_args\': {\'charset\': \'utf8\', \'db\': \'db_sicoin\', \'host\': \'190.169.221.33\', \'passwd\': \'*forint49*\', \'port\': 3306, \'user\': \'root\'}, \'folder\': None, \'pool_size\': 0, \'uri\': \'mysql://root:*forint49*@190.169.221.33/db_sicoin\'}'
+p158
+sS'folder'
+p159
+S'None'
+p160
+sS'tb'
+p161
+S'\'Traceback (most recent call last):\\n  File "/home...nect to MySQL server on \\\'190.169.221.33\\\' (111)")\\n\''
+p162
+sS'uris'
+p163
+S"['mysql://root:*forint49*@190.169.221.33/db_sicoin']"
+p164
+sS'lazy_tables'
+p165
+g95
+sS'db_codec'
+p166
+S"'UTF-8'"
+p167
+sS'adapter_args'
+p168
+S'None'
+p169
+sS'fake_migrate'
+p170
+g95
+sS'connected'
+p171
+g95
+sS'credential_decoder'
+p172
+S'<function <lambda>>'
+p173
+sS'after_connection'
+p174
+S'None'
+p175
+sS'fake_migrate_all'
+p176
+g95
+sS'db_uid'
+p177
+S'None'
+p178
+sS'k'
+S'4'
+sS'uri'
+p179
+S"'mysql://root:*forint49*@190.169.221.33/db_sicoin'"
+p180
+sS'pool_size'
+p181
+S'0'
+sS'error'
+p182
+S"''"
+p183
+sS'debug'
+p184
+g95
+sssS'traceback'
+p185
+S'Traceback (most recent call last):\n  File "/home/perdomor/Escritorio/web2py/gluon/restricted.py", line 217, in restricted\n    exec ccode in environment\n  File "/home/perdomor/Escritorio/web2py/applications/sicoin/models/db.py", line 14, in <module>\n    db = DAL(\'mysql://root:*forint49*@190.169.221.33/db_sicoin\', migrate_enabled=False)\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 7543, in __init__\n    raise RuntimeError("Failure to connect, tried %d times:\\n%s" % (attempts, tb))\nRuntimeError: Failure to connect, tried 5 times:\nTraceback (most recent call last):\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 7522, in __init__\n    self._adapter = ADAPTERS[self._dbname](**kwargs)\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 2569, in __init__\n    if do_connect: self.reconnect()\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 606, in reconnect\n    self.connection = f()\n  File "/home/perdomor/Escritorio/web2py/gluon/dal.py", line 2567, in connector\n    return self.driver.connect(**driver_args)\n  File "/home/perdomor/Escritorio/web2py/gluon/contrib/pymysql/__init__.py", line 93, in Connect\n    return Connection(*args, **kwargs)\n  File "/home/perdomor/Escritorio/web2py/gluon/contrib/pymysql/connections.py", line 575, in __init__\n    self._connect()\n  File "/home/perdomor/Escritorio/web2py/gluon/contrib/pymysql/connections.py", line 743, in _connect\n    raise OperationalError(2003, "Can\'t connect to MySQL server on %r (%s)" % (self.host, e.args[0]))\nOperationalError: (2003, "Can\'t connect to MySQL server on \'190.169.221.33\' (111)")\n\n'
+p186
+s.

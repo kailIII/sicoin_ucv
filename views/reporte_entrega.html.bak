@@ -1,0 +1,56 @@
+<center>
+	<table>
+		<tr>
+        	<td>
+            	&nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp;
+            </td>
+        	<td>
+            	<img src="/sicoin/static/images/ucv.png" width="80" height="80"  />
+            </td>
+            <td style="vertical-align:bottom; text-align:center;">
+            	<small>
+                            	<p style="text-align:center;">
+                            		Universidad Central de Venezuela <br />
+                                    Direcci&oacute;n de Formaci&oacute;n Integral y Proyecci&oacute;n Universitaria<br />
+                                    Departamento de ...
+                                </p>
+                </small>
+            </td>
+            <td>
+            	<img src="/sicoin/static/images/dfipu.png" width="80"  height="80" />
+            </td>
+            <td>
+            	&nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp; &nbsp;  &nbsp;    
+            </td>
+        </tr>
+        <tr>
+        	<td colspan="5">
+                {{block fecha}}{{end}}
+            </td>
+        </tr>
+        <tr>
+        	<td colspan="5">
+                {{block correspondencias}}{{end}}
+            </td>
+        </tr>
+        <tr>
+        	<td>
+                <br /><br />
+            </td>
+        </tr>
+        <tr>
+        	<td>
+            </td>
+            <td>
+                <p style="text-align:center;">________________________<br />Despachado por</p>
+            </td>
+            <td>
+            </td>
+            <td>
+            	<p style="text-align:center;">________________________<br />Recibido por</p>
+            </td>
+            <td>
+            </td>
+        </tr>
+	</table>
+</center>

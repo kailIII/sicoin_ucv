@@ -1,0 +1,16 @@
+{{extend 'layout.html'}}
+<div class="form_header row_buttons  "><a class="w2p_trap button btn" href="javascript:history.go(-1)"><span class="icon leftarrow icon-arrow-left"></span><span class="buttontext button" title="Back">Regresar</span></a><a class="w2p_trap button btn" onclick="javascript:$('#reporte').jqprint();"><span class="icon print icon-print"></span><span class="buttontext button" title="Edit">Imprimir</span></a></div>
+<div id="historico"  style="font-size: 12px;">
+	{{=table}}
+<div>
+<div id="actual">
+	{{=tabla_actual}}
+</div>
+<script>
+	$('#historico table').addClass("table table-striped table-bordered table-condensed");
+    actual = $("#actual table > tbody").html();
+    $("#historico table:first > tbody").append(actual);
+    $("#actual table:first").remove();
+    if ($("#historico .table").html()=="") 
+        $("#historico").html("<h4>Este registro no presenta movimientos hist&oacute;ricos a&uacute;n</h4>");    
+</script>

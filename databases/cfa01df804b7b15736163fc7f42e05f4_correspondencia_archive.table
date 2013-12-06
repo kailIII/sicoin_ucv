@@ -1,0 +1,201 @@
+(dp1
+S'estatus'
+p2
+(dp3
+S'sortable'
+p4
+I7
+sS'type'
+p5
+S'reference estatus'
+p6
+sS'sql'
+p7
+S'INT, INDEX estatus__idx (estatus), FOREIGN KEY (estatus) REFERENCES estatus (id) ON DELETE CASCADE'
+p8
+ssS'current_record'
+p9
+(dp10
+g4
+I2
+sg5
+S'reference correspondencia'
+p11
+sg7
+S'INT, INDEX current_record__idx (current_record), FOREIGN KEY (current_record) REFERENCES correspondencia (id) ON DELETE CASCADE'
+p12
+ssS'tipo_de_documento'
+p13
+(dp14
+g4
+I6
+sg5
+S'reference documento'
+p15
+sg7
+S'INT, INDEX tipo_de_documento__idx (tipo_de_documento), FOREIGN KEY (tipo_de_documento) REFERENCES documento (id) ON DELETE CASCADE'
+p16
+ssS'remitente'
+p17
+(dp18
+g4
+I8
+sg5
+S'string'
+p19
+sg7
+S'VARCHAR(100) NOT NULL'
+p20
+ssS'asignado_a'
+p21
+(dp22
+S'type'
+p23
+S'reference auth_user'
+p24
+sS'sortable'
+p25
+I14
+sS'sql'
+p26
+S'INT, INDEX asignado_a__idx (asignado_a), FOREIGN KEY (asignado_a) REFERENCES auth_user (id) ON DELETE CASCADE'
+p27
+ssS'fecha_correspondencia'
+p28
+(dp29
+g4
+I5
+sg5
+S'date'
+p30
+sg7
+S'DATE NOT NULL'
+p31
+ssS'id'
+p32
+(dp33
+g4
+I1
+sg5
+S'id'
+p34
+sg7
+S'INT AUTO_INCREMENT NOT NULL'
+p35
+ssS'destinatario'
+p36
+(dp37
+g4
+I10
+sg5
+g19
+sg7
+S'VARCHAR(100) NOT NULL'
+p38
+ssS'departamento_origen'
+p39
+(dp40
+g4
+I9
+sg5
+S'reference departamento'
+p41
+sg7
+S'INT, INDEX departamento_origen__idx (departamento_origen), FOREIGN KEY (departamento_origen) REFERENCES departamento (id) ON DELETE CASCADE'
+p42
+ssS'modificado_el'
+p43
+(dp44
+S'sortable'
+p45
+I4
+sS'type'
+p46
+S'datetime'
+p47
+sS'sql'
+p48
+S'DATETIME'
+p49
+ssS'nro_de_documento'
+p50
+(dp51
+g4
+I3
+sg5
+g19
+sg7
+S'VARCHAR(100) NOT NULL'
+p52
+ssS'modificado_por'
+p53
+(dp54
+S'type'
+p55
+S'reference auth_user'
+p56
+sS'sortable'
+p57
+I3
+sS'sql'
+p58
+S'INT, INDEX modificado_por__idx (modificado_por), FOREIGN KEY (modificado_por) REFERENCES auth_user (id) ON DELETE CASCADE'
+p59
+ssS'asunto'
+p60
+(dp61
+S'type'
+p62
+S'string'
+p63
+sS'sortable'
+p64
+I12
+sS'sql'
+p65
+S'VARCHAR(100)'
+p66
+ssS'fecha_registro'
+p67
+(dp68
+g4
+I4
+sg5
+S'datetime'
+p69
+sg7
+S'DATETIME'
+p70
+ssS'registrado_por'
+p71
+(dp72
+g4
+I15
+sg5
+S'reference auth_user'
+p73
+sg7
+S'INT, INDEX registrado_por__idx (registrado_por), FOREIGN KEY (registrado_por) REFERENCES auth_user (id) ON DELETE CASCADE'
+p74
+ssS'observaciones'
+p75
+(dp76
+g4
+I13
+sg5
+S'text'
+p77
+sg7
+S'LONGTEXT'
+p78
+ssS'departamento_destino'
+p79
+(dp80
+g4
+I11
+sg5
+g41
+sg7
+S'INT, INDEX departamento_destino__idx (departamento_destino), FOREIGN KEY (departamento_destino) REFERENCES departamento (id) ON DELETE CASCADE'
+p81
+ss.

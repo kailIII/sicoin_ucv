@@ -1,0 +1,15 @@
+{{extend 'layout.html'}}
+<div class="form_header row_buttons  "><a class="w2p_trap button btn" href="javascript:history.go(-1)"><span class="icon leftarrow icon-arrow-left"></span><span class="buttontext button" title="Back">Regresar</span></a></div>
+
+{{=form}}
+
+<script>
+    $("#correspondencia_tipo_de_documento").val({{=session.documento}});
+    $("#correspondencia_destinatario").val('Jefe de Departamento');
+    $("#correspondencia_tipo_de_documento").attr("disabled", true); 
+    $("#correspondencia_destinatario").attr("disabled", true); 
+    $("form").submit(function() {
+    	$("#correspondencia_tipo_de_documento").prop("disabled", false);
+    	$("#correspondencia_destinatario").prop("disabled", false);
+	});
+</script>
